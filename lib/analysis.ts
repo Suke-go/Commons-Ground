@@ -31,14 +31,16 @@ export async function runSimpleVoteAnalysis(
 
   // Aggregate votes per statement.
   // We join from statements to votes so statements with zero votes are still included.
-  const { rows } = await sql<{
+  type VoteAggregateRow = {
     statement_id: string;
     text_ja: string;
     total_votes: number | null;
     agree_count: number | null;
     disagree_count: number | null;
     pass_count: number | null;
-  }>`
+  };
+
+  const { rows } = await sql<VoteAggregateRow>`
     SELECT
       s.id AS statement_id,
       s.text_ja,
@@ -55,7 +57,7 @@ export async function runSimpleVoteAnalysis(
     ORDER BY s.id
   `;
 
-  const statements: StatementResult[] = rows.map((row) => {
+  const statements: StatementResult[] = rows.map((row: VoteAggregateRow) => {
     const total = Number(row.total_votes ?? 0);
     const agree = Number(row.agree_count ?? 0);
     const disagree = Number(row.disagree_count ?? 0);
